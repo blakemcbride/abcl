@@ -34,8 +34,7 @@
 (in-package #:system)
 
 
-(defun apropos-list (string-designator &optional package-designator
-                                                 external-only)
+(defun %apropos-list (string-designator package-designator external-only)
   (if package-designator
       (let ((package (find-package package-designator))
             (string (string string-designator))
@@ -51,13 +50,16 @@
               (push symbol result))))
         result)
       (mapcan (lambda (package)
-                (apropos-list string-designator package external-only))
+                (%apropos-list string-designator package external-only))
               (list-all-packages))))
 
-(defun apropos (string-designator &optional package-designator external-only)
-  (dolist (symbol (remove-duplicates (apropos-list string-designator
-                                                   package-designator
-                                                   external-only)))
+(defun apropos-list (string-designator &optional package-designator)
+  (%apropos-list string-designator package-designator nil))
+
+(defun apropos (string-designator &optional package-designator)
+  (dolist (symbol (remove-duplicates (%apropos-list string-designator
+                                                    package-designator
+                                                    nil)))
     (fresh-line)
     (prin1 symbol)
     (when (boundp symbol)
